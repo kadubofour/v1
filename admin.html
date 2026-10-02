@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Store admin — Nyon Derma</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="side" data-side>
+    <a href="admin.html#overview"><img class="logo" src="assets/img/logo-white.png" alt="Nyon Derma admin"></a>
+    <nav aria-label="Admin" data-admin-nav></nav>
+    <div class="side-foot">
+      <a class="btn btn-block store-link" href="index.html" target="_blank" rel="noopener">View storefront</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;gap:12px;align-items:center">
+        <button class="icon-btn mobile-nav-toggle" type="button" data-side-toggle aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div><h1 data-title>Overview</h1><div class="sub" data-sub></div></div>
+      </div>
+      <div class="me"><img src="assets/img/ceo.jpg" alt=""><div><strong>Yayra Akorli</strong><span>Store owner</span></div></div>
+    </div>
+
+    <div class="demo-note" data-demo-note hidden>
+      <span>This dashboard shows sample orders so you can see it in use. Real orders and messages from the storefront appear alongside them.</span>
+      <button type="button" data-clear-sample>Remove sample data</button>
+    </div>
+
+    <!-- Overview -->
+    <section class="view" data-view="overview">
+      <div class="kpis" data-kpis></div>
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-head"><h2>Revenue, last 14 days</h2><span class="small" data-chart-total></span></div>
+          <div class="chart-wrap"><svg class="chart" data-chart role="img" aria-label="Daily revenue bar chart"></svg><div class="chart-tip" data-tip></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Best sellers</h2><a href="#products">All products</a></div>
+          <ul class="top-list" data-top></ul>
+        </div>
+      </div>
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-head"><h2>Recent orders</h2><a href="#orders">All orders</a></div>
+          <div class="table-wrap"><table class="data" data-recent></table></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Needs attention</h2></div>
+          <ul class="top-list" data-attention></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orders -->
+    <section class="view" data-view="orders" hidden>
+      <div class="panel">
+        <div class="toolbar-a">
+          <label class="search"><span class="sr-only">Search orders</span><input type="search" placeholder="Search by order, name or phone" data-order-q></label>
+          <div class="seg" data-order-filter role="group" aria-label="Filter by status"></div>
+        </div>
+        <div class="table-wrap"><table class="data" data-orders></table></div>
+      </div>
+    </section>
+
+    <!-- Products -->
+    <section class="view" data-view="products" hidden>
+      <div class="panel">
+        <div class="toolbar-a">
+          <label class="search"><span class="sr-only">Search products</span><input type="search" placeholder="Search products" data-prod-q></label>
+          <div class="seg" data-prod-filter role="group" aria-label="Filter products"></div>
+          <button class="btn btn-primary" type="button" data-new-product style="margin-left:auto">Add product</button>
+        </div>
+        <div class="table-wrap"><table class="data" data-products></table></div>
+      </div>
+    </section>
+
+    <!-- Messages -->
+    <section class="view" data-view="messages" hidden>
+      <div class="panel" data-msg-login hidden style="max-width:440px">
+        <h2 style="font-size:1.2rem;margin-bottom:6px">Sign in to read messages</h2>
+        <p class="small" style="margin-bottom:18px">Customer messages are stored on the server, so they need the admin password.</p>
+        <form data-admin-login novalidate>
+          <div class="field"><label for="al-pass">Admin password</label><input id="al-pass" name="password" type="password" autocomplete="current-password" required><span class="err"></span></div>
+          <button class="btn btn-primary" type="submit" style="margin-top:14px">Sign in</button>
+        </form>
+      </div>
+      <div class="panel" data-msg-offline hidden>
+        <h2 style="font-size:1.2rem;margin-bottom:6px">Messages need the server</h2>
+        <p class="small" style="margin:0">Start the site with <code>python serve.py</code> to receive and reply to customer messages.</p>
+      </div>
+      <div data-msg-app hidden>
+        <div class="toolbar-a">
+          <div class="seg" data-msg-filter role="group" aria-label="Filter messages"></div>
+          <span class="small" data-mail-mode style="margin-left:auto"></span>
+          <button class="btn" type="button" data-admin-logout style="padding:8px 16px">Sign out</button>
+        </div>
+        <div class="inbox-layout">
+          <div class="panel inbox-list"><ul data-msg-list aria-label="Messages"></ul></div>
+          <div class="panel inbox-thread" data-msg-thread aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Sales & discounts -->
+    <section class="view" data-view="sales" hidden>
+      <div class="dash-grid even" style="align-items:start">
+        <div class="panel">
+          <div class="panel-head"><h2>Put products on sale</h2></div>
+          <form data-bulk-sale novalidate>
+            <div class="form-grid">
+              <div class="field"><label for="bs-scope">Products</label><select id="bs-scope" name="scope" data-bulk-scope></select></div>
+              <div class="field"><label for="bs-pct">Percent off</label><input id="bs-pct" name="pct" type="number" min="1" max="90" value="15" required><span class="err">Enter 1 to 90.</span></div>
+              <div class="field"><label for="bs-ends">Sale ends <span class="small">(optional)</span></label><input id="bs-ends" name="ends" type="date"></div>
+              <div class="field" style="align-self:end"><button class="btn btn-primary btn-block" type="submit">Apply sale</button></div>
+            </div>
+            <p class="small" style="margin:12px 0 0">Prices round to the nearest cedi. Shoppers see the old price crossed out and a Sale badge. To set one product's sale price, edit it in Products.</p>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>On sale now</h2><button class="link" type="button" data-end-all>End all sales</button></div>
+          <ul class="top-list" data-on-sale></ul>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <div class="panel-head"><div><h2>Discount codes</h2><p class="small" style="margin:4px 0 0">Shoppers enter these at checkout. One code per order.</p></div><button class="btn btn-primary" type="button" data-new-code>New code</button></div>
+        <div class="table-wrap"><table class="data" data-codes></table></div>
+      </div>
+    </section>
+
+    <!-- Skin School -->
+    <section class="view" data-view="blog" hidden>
+      <div class="panel">
+        <div class="toolbar-a">
+          <label class="search"><span class="sr-only">Search articles</span><input type="search" placeholder="Search articles" data-post-q></label>
+          <button class="btn btn-primary" type="button" data-new-post style="margin-left:auto">Write an article</button>
+        </div>
+        <div class="table-wrap"><table class="data" data-posts></table></div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section class="view" data-view="settings" hidden>
+      <form data-settings novalidate>
+        <div class="dash-grid even" style="align-items:start">
+          <div class="panel">
+            <div class="panel-head"><h2>Announcement bar</h2></div>
+            <div class="form-grid">
+              <div class="field full" style="display:flex;flex-direction:row;align-items:center;gap:12px"><label class="switch"><input type="checkbox" name="annOn" aria-label="Show announcement bar"><span></span></label><span>Show the bar at the top of every page</span></div>
+              <div class="field full"><label for="st-text">Message</label><input id="st-text" name="annText" maxlength="120"><span class="hint">Keep it short, for example a sale or delivery update.</span></div>
+              <div class="field"><label for="st-ltext">Link text <span class="small">(optional)</span></label><input id="st-ltext" name="annLinkText"></div>
+              <div class="field"><label for="st-link">Link to <span class="small">(optional)</span></label><input id="st-link" name="annLink" placeholder="shop.html?sale=1"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Treatment bookings</h2></div>
+            <div class="field"><label for="st-book">Booking page address</label><input id="st-book" name="bookingUrl" type="url" required><span class="err">Enter a full web address starting with https://</span><span class="hint">Every "Book" button on the site opens this page.</span></div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-head"><h2>Delivery fees</h2></div>
+          <div class="table-wrap"><table class="data" data-zones></table></div>
+          <p class="small" style="margin:12px 0 0">A fee of 0 shows as "quoted later" at checkout.</p>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button class="btn btn-primary" type="submit">Save settings</button>
+          <button class="btn" type="button" data-reset-settings>Restore defaults</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Customers -->
+    <section class="view" data-view="customers" hidden>
+      <div class="panel">
+        <div class="toolbar-a"><label class="search"><span class="sr-only">Search customers</span><input type="search" placeholder="Search customers" data-cust-q></label></div>
+        <div class="table-wrap"><table class="data" data-customers></table></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<dialog class="modal" data-product-modal aria-labelledby="pm-title">
+  <form method="dialog" data-product-form novalidate>
+    <div class="modal-head"><h2 id="pm-title">Add product</h2><button class="icon-btn sm" value="cancel" formnovalidate aria-label="Close">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full img-pick"><img data-pm-img src="assets/img/logo.png" alt=""><div class="field"><label for="pm-file">Product photo</label><input id="pm-file" type="file" accept="image/*"><span class="hint">Square photos look best. Keep files under 1 MB.</span></div></div>
+        <div class="field full"><label for="pm-name">Name</label><input id="pm-name" name="name" required><span class="err">Give the product a name.</span></div>
+        <div class="field"><label for="pm-price">Price (₵)</label><input id="pm-price" name="price" type="number" min="0" step="0.5" required><span class="err">Enter a price.</span></div>
+        <div class="field"><label for="pm-stock">Units in stock</label><input id="pm-stock" name="stock" type="number" min="0" step="1" required></div>
+        <div class="field"><label for="pm-sale">Sale price (₵) <span class="small">(optional)</span></label><input id="pm-sale" name="salePrice" type="number" min="0" step="0.5"><span class="err">Sale price must be lower than the price.</span></div>
+        <div class="field"><label for="pm-sale-ends">Sale ends <span class="small">(optional)</span></label><input id="pm-sale-ends" name="saleEnds" type="date"></div>
+        <div class="field full"><span class="label" style="font-weight:600;font-size:.9rem">Categories</span><div class="check-grid" data-pm-cats></div></div>
+        <div class="field full"><span class="label" style="font-weight:600;font-size:.9rem">Skin concerns</span><div class="check-grid" data-pm-concerns></div></div>
+        <div class="field full"><label for="pm-desc">Description</label><textarea id="pm-desc" name="desc"></textarea></div>
+        <div class="field full" style="display:flex;flex-direction:row;align-items:center;gap:12px"><label class="switch"><input type="checkbox" name="active" checked aria-label="Visible in shop"><span></span></label><span>Visible in the shop</span></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" type="button" data-pm-delete style="color:#b3243a">Delete product</button>
+      <div style="display:flex;gap:10px;margin-left:auto"><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn btn-primary" value="save" data-pm-save>Save product</button></div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="modal sheet-r" data-order-modal aria-labelledby="om-title">
+  <div class="modal-head"><h2 id="om-title">Order</h2><form method="dialog"><button class="icon-btn sm" aria-label="Close">✕</button></form></div>
+  <div class="modal-body" data-order-body></div>
+</dialog>
+
+
+<dialog class="modal" data-post-modal aria-labelledby="po-title" style="width:min(760px, calc(100% - 32px))">
+  <form method="dialog" data-post-form novalidate>
+    <div class="modal-head"><h2 id="po-title">Write an article</h2><button class="icon-btn sm" value="cancel" formnovalidate aria-label="Close">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full img-pick"><img data-po-img src="assets/img/n-mark.png" alt=""><div class="field"><label for="po-file">Cover photo</label><input id="po-file" type="file" accept="image/*"><span class="hint">Landscape photos work best. Keep files under 1.5 MB.</span></div></div>
+        <div class="field full"><label for="po-titlein">Title</label><input id="po-titlein" name="title" required><span class="err">Give the article a title.</span></div>
+        <div class="field"><label for="po-date">Publish date</label><input id="po-date" name="date" type="date" required><span class="hint">A future date schedules it.</span></div>
+        <div class="field"><label for="po-status">Status</label><select id="po-status" name="status"><option value="published">Published</option><option value="draft">Draft (hidden)</option></select></div>
+        <div class="field full"><label for="po-excerpt">Summary</label><textarea id="po-excerpt" name="excerpt" style="min-height:70px" maxlength="220"></textarea><span class="hint">Shown on the Skin School page. One or two sentences.</span></div>
+        <div class="field full"><label for="po-body">Article</label><textarea id="po-body" name="body" style="min-height:280px;font-family:inherit" required></textarea><span class="err">Write the article before saving.</span>
+          <span class="hint">Leave a blank line between paragraphs. Start a line with ## for a heading, or - for a bullet point.</span></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" type="button" data-po-delete style="color:#b3243a">Delete article</button>
+      <div style="display:flex;gap:10px;margin-left:auto"><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn btn-primary" value="save">Save article</button></div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="modal" data-code-modal aria-labelledby="cd-title">
+  <form method="dialog" data-code-form novalidate>
+    <div class="modal-head"><h2 id="cd-title">New discount code</h2><button class="icon-btn sm" value="cancel" formnovalidate aria-label="Close">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full"><label for="cd-code">Code</label><input id="cd-code" name="code" required maxlength="20" style="text-transform:uppercase" placeholder="GLOW15"><span class="err">Use 3–20 letters or numbers, not already in use.</span></div>
+        <div class="field"><label for="cd-type">Type</label><select id="cd-type" name="type"><option value="percent">Percent off</option><option value="fixed">Amount off (₵)</option></select></div>
+        <div class="field"><label for="cd-value">Value</label><input id="cd-value" name="value" type="number" min="1" step="1" required><span class="err">Enter a value above 0 (percent up to 90).</span></div>
+        <div class="field"><label for="cd-min">Minimum spend (₵) <span class="small">(optional)</span></label><input id="cd-min" name="min" type="number" min="0" step="1"></div>
+        <div class="field"><label for="cd-ends">Expires <span class="small">(optional)</span></label><input id="cd-ends" name="ends" type="date"></div>
+        <div class="field full" style="display:flex;flex-direction:row;align-items:center;gap:12px"><label class="switch"><input type="checkbox" name="active" checked aria-label="Code is active"><span></span></label><span>Active</span></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" type="button" data-cd-delete style="color:#b3243a">Delete code</button>
+      <div style="display:flex;gap:10px;margin-left:auto"><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn btn-primary" value="save">Save code</button></div>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/posts.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

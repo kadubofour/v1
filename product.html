@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product — Nyon Derma</title>
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card" style="padding-bottom:28px">
+    <div data-header-slot></div>
+    <div class="page-card-body" style="padding-top:8px">
+      <ol class="crumbs" style="margin:0" data-crumbs><li><a href="index.html">Home</a></li><li><a href="shop.html">Shop</a></li></ol>
+    </div>
+  </section>
+
+  <section class="section wrap" style="padding-top:48px" data-pdp></section>
+
+  <section class="section wrap" aria-labelledby="related-title">
+    <div class="section-head"><h2 class="h2" id="related-title">Works well with</h2><a class="btn" href="shop.html">Back to the catalogue</a></div>
+    <div class="grid-products" data-related></div>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const { Store, money, img, esc, productCard, addToCart, onSale, priceHTML } = window.Nyon;
+  const S = window.NYON_SEED;
+  const slug = new URLSearchParams(location.search).get("p");
+  const p = Store.bySlug(slug);
+  const root = document.querySelector("[data-pdp]");
+
+  if (!p || p.status === "draft") {
+    root.innerHTML = `<div class="empty"><strong>We couldn't find that product</strong>It may have been renamed or removed from the shop.<br><br><a class="btn btn-primary" href="shop.html">Browse the catalogue</a></div>`;
+    document.querySelector("[aria-labelledby=related-title]").remove();
+    return;
+  }
+
+  document.title = `${p.name} — Nyon Derma`;
+  document.querySelector("[data-crumbs]").insertAdjacentHTML("beforeend", `<li>${esc(p.name)}</li>`);
+  const pics = [p.img, p.img2].filter(Boolean);
+  const concernLabels = p.concerns.map(k => S.concerns.find(c => c.key === k)?.label).filter(Boolean);
+  const isSet = p.cats.includes("Sets");
+  const soldOut = p.stock <= 0;
+
+  root.innerHTML = `
+    <div class="pdp">
+      <div class="gallery">
+        <div class="thumbs">${pics.map((src, i) => `<button type="button" data-pic="${i}" aria-pressed="${i === 0}" aria-label="Show image ${i + 1}"><img src="${img(src)}" alt=""></button>`).join("")}</div>
+        <div class="main"><img data-main src="${img(pics[0])}" alt="${esc(p.name)}"></div>
+      </div>
+      <div class="pdp-info">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">${p.cats.map(c => `<a class="badge" href="shop.html?cat=${encodeURIComponent(c)}" style="text-decoration:none">${esc(c)}</a>`).join("")}${soldOut ? '<span class="badge badge-coral">Sold out</span>' : ""}</div>
+        <h1>${esc(p.name)}</h1>
+        <div class="price">${priceHTML(p)}${onSale(p) ? `<span class="sale-note">Save ${money(p.price - p.salePrice)}${p.saleEnds ? `, ends ${new Date(p.saleEnds).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : ""}</span>` : ""}</div>
+        <p class="desc">${esc(p.desc)}</p>
+        <div class="buy-row">
+          <div class="qty lg" aria-label="Quantity"><button type="button" data-step="-1" aria-label="Decrease quantity">−</button><span data-q>1</span><button type="button" data-step="1" aria-label="Increase quantity">+</button></div>
+          <button class="btn btn-primary" type="button" data-buy${soldOut ? " disabled" : ""}>${soldOut ? "Sold out" : "Add to bag"}</button>
+          <button class="btn" type="button" data-buy-now${soldOut ? " disabled" : ""}>Buy now</button>
+        </div>
+        <div class="facts">
+          <details open><summary>Good for</summary><p>${concernLabels.map(esc).join(", ")}. Unless stated otherwise, Nyon Derma products suit all skin types, complexions and genders.</p></details>
+          <details><summary>How to use</summary><p>${isSet
+            ? "Always start on clean skin. Apply serum before cream, and cream or lotion before oil. Full step-by-step routines for every set are on our routines page."
+            : "Follow the directions on the label. Apply serum before cream, and cream or lotion before oil. Wear sunscreen in the day when using exfoliating actives."} <a href="about.html#routine">See skincare routines</a>.</p></details>
+          <details><summary>Delivery and returns</summary><p>Delivery takes 24–48 hours within Ghana and 1–14 days worldwide. Text updates are sent at every stage for orders outside Accra. See <a href="contact.html#faq">shipping and returns</a>.</p></details>
+        </div>
+        <div class="assure">
+          <div><strong>FDA Ghana</strong>Tested and approved</div>
+          <div><strong>No bleaching</strong>Brightens, never bleaches</div>
+          <div><strong>Fast delivery</strong>24–48 hours in Ghana</div>
+        </div>
+      </div>
+    </div>`;
+
+  let qty = 1;
+  root.addEventListener("click", e => {
+    const pic = e.target.closest("[data-pic]");
+    if (pic) {
+      root.querySelector("[data-main]").src = img(pics[pic.dataset.pic]);
+      root.querySelectorAll("[data-pic]").forEach(b => b.setAttribute("aria-pressed", b === pic));
+    }
+    const step = e.target.closest("[data-step]");
+    if (step) { qty = Math.max(1, Math.min(20, qty + Number(step.dataset.step))); root.querySelector("[data-q]").textContent = qty; }
+    if (e.target.closest("[data-buy]")) addToCart(p.id, qty);
+    if (e.target.closest("[data-buy-now]")) { addToCart(p.id, qty); location.href = "cart.html"; }
+  });
+
+  // Phones: keep "Add to bag" reachable once the main buttons scroll out of view.
+  if (!soldOut) {
+    document.body.insertAdjacentHTML("beforeend", `<div class="buy-bar" data-buy-bar aria-hidden="true">
+      <img src="${img(pics[0])}" alt=""><div class="bb-text"><strong>${esc(p.name)}</strong><span class="bb-price">${priceHTML(p)}</span></div>
+      <button class="btn btn-primary" type="button" data-bar-add tabindex="-1">Add to bag</button></div>`);
+    const bar = document.querySelector("[data-buy-bar]");
+    document.body.classList.add("has-buy-bar");
+    bar.querySelector("[data-bar-add]").addEventListener("click", () => addToCart(p.id, qty));
+    new IntersectionObserver(([entry]) => {
+      const on = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+      bar.classList.toggle("is-on", on);
+      bar.setAttribute("aria-hidden", String(!on));
+      bar.querySelector("button").tabIndex = on ? 0 : -1;
+    }).observe(root.querySelector(".buy-row"));
+  }
+
+  const related = Store.visibleProducts()
+    .filter(x => x.id !== p.id && x.concerns.some(c => p.concerns.includes(c)))
+    .sort((a, b) => (a.cats.includes("Sets") - b.cats.includes("Sets")))
+    .slice(0, 4);
+  document.querySelector("[data-related]").innerHTML = related.map(productCard).join("");
+})();
+</script>
+</body>
+</html>

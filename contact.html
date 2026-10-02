@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Help &amp; contact — Nyon Derma</title>
+  <meta name="description" content="Shipping times, returns, order tracking and how to reach the Nyon Derma team.">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>Help</li></ol>
+      <h1 class="display">How can we help?</h1>
+      <p class="lede">Answers about orders and delivery, or send the team a message.</p>
+    </div>
+  </section>
+
+  <section class="section wrap" id="faq">
+    <div class="split">
+      <div>
+        <h2 class="h2" style="margin-bottom:12px">Common questions</h2>
+        <p style="color:var(--ink-soft);margin-bottom:20px">More answers about orders, payments and returns are in <a href="help.html">Customer help</a>.</p>
+        <div class="faq">
+          <details open><summary>How long does delivery take?</summary><p>24–48 hours within Ghana. Worldwide delivery takes 1–14 days depending on your address.</p></details>
+          <details><summary>Do you ship to my country?</summary><p>We ship to most countries. If yours isn't listed at checkout, send us a message and we'll arrange it.</p></details>
+          <details><summary>How do I track my order?</summary><p>Tracking is available for orders outside Accra. We send a text message at every stage of shipping.</p></details>
+          <details><summary>How do I change my shipping address?</summary><p>Send us your new address using the form on this page. Once a package has been picked up for delivery, the address can't be changed — please double-check it before you place your order.</p></details>
+          <details><summary>What is your return and exchange policy?</summary><p>Send a return request within 30 days of receiving your order. Wrongly processed orders and damaged products can be returned. We inspect damaged products to find where the damage happened. Authorised returns go to Kisseman Street, Accra, Ghana.</p></details>
+          <details><summary>I received the wrong item</summary><p>Send us a request for an exchange. We'll process and ship the correct order as soon as possible.</p></details>
+          <details><summary>My order arrived damaged</summary><p>Send a photo of the package as you received it via WhatsApp or any of our social pages. We'll review it and get back to you about an exchange.</p></details>
+          <details><summary>Which products are right for my skin?</summary><p>Message us with your concern and we'll suggest products, or book a facial for a full skin assessment.</p></details>
+        </div>
+      </div>
+      <div>
+        <form class="form-card" data-msg novalidate>
+          <h2 class="h3" style="margin-bottom:6px">Send us a message</h2>
+          <p class="small" style="margin-bottom:20px">We reply within one working day.</p>
+          <div class="form-grid">
+            <div class="field"><label for="m-name">Name</label><input id="m-name" name="name" autocomplete="name" required><span class="err">Enter your name.</span></div>
+            <div class="field"><label for="m-email">Email or phone</label><input id="m-email" name="contact" required><span class="err">Enter an email or phone number.</span></div>
+            <div class="field full"><label for="m-topic">Topic</label><select id="m-topic" name="topic"><option>Product advice</option><option>My order</option><option>Change of address</option><option>Returns</option><option>Wholesale or partnership</option></select></div>
+            <div class="field full"><label for="m-body">Message</label><textarea id="m-body" name="message" required></textarea><span class="err">Write a short message.</span></div>
+            <div class="full"><button class="btn btn-primary btn-block" type="submit">Send message</button></div>
+            <div class="full notice" data-msg-done hidden role="status"></div>
+          </div>
+        </form>
+        <div style="display:grid;gap:12px;margin-top:20px">
+          <a class="btn" href="tel:+233558498657">Call +233 55 849 8657</a>
+          <a class="btn" href="https://wa.me/233558498657" target="_blank" rel="noopener">Chat on WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const form = document.querySelector("[data-msg]");
+  const done = form.querySelector("[data-msg-done]");
+  const btn = form.querySelector("[type=submit]");
+  const FIELDS = { name: "#m-name", contact: "#m-email", message: "#m-body" };
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(form));
+    let ok = true;
+    [["#m-name", d.name.trim().length > 1], ["#m-email", d.contact.trim().length > 4], ["#m-body", d.message.trim().length > 2]].forEach(([id, valid]) => {
+      form.querySelector(id).closest(".field").classList.toggle("has-error", !valid); if (!valid) ok = false;
+    });
+    if (!ok) { form.querySelector(".has-error input, .has-error textarea").focus(); return; }
+
+    btn.disabled = true; btn.textContent = "Sending…"; done.hidden = true;
+    try {
+      const res = await fetch("/api/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) });
+      const body = await res.json().catch(() => ({}));
+      if (res.status === 400 && body.errors) {
+        Object.entries(body.errors).forEach(([k, msg]) => {
+          const f = form.querySelector(FIELDS[k])?.closest(".field");
+          if (f) { f.classList.add("has-error"); f.querySelector(".err").textContent = msg; }
+        });
+        return;
+      }
+      if (!res.ok) throw new Error(body.error || "Something went wrong.");
+      const byEmail = d.contact.includes("@");
+      done.hidden = false; done.style.color = "";
+      done.textContent = byEmail
+        ? `Message sent. We'll reply to ${d.contact} within one working day, with a link to continue the conversation.`
+        : `Message sent. We'll get back to you on ${d.contact} within one working day.`;
+      form.reset();
+    } catch (err) {
+      done.hidden = false; done.style.color = "#b3243a";
+      done.textContent = `${err.message === "Failed to fetch" ? "We couldn't send your message right now." : err.message} Please try again, or reach us on WhatsApp.`;
+    } finally {
+      btn.disabled = false; btn.textContent = "Send message";
+    }
+  });
+})();
+</script>
+</body>
+</html>

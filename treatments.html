@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Facials &amp; treatments — Nyon Derma</title>
+  <meta name="description" content="Book an acne, hyperpigmentation or hydrofacial treatment at Seva Wellness Studio with chief aesthetician Yayra Akorli.">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card has-media" style="min-height:560px">
+    <div class="page-card-media"><img src="assets/img/treatment.jpg" alt="" style="object-position:center 20%"></div>
+    <div data-header-slot></div>
+    <div class="page-card-body" style="padding-top:clamp(40px,8vw,110px)">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>Treatments</li></ol>
+      <h1 class="display">A good facial makes everything else easy</h1>
+      <p class="lede">Seva Wellness Studio specialises in results-driven treatments for acne and hyperpigmentation in melanin-rich skin.</p>
+      <div class="hero-cta" style="margin-top:28px"><a class="btn btn-light" href="https://booking.nyonderma.com/" target="_blank" rel="noopener">Book an appointment</a><a class="btn" href="#menu-title">See the treatment menu</a></div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="split" style="align-items:center">
+      <div class="media" style="aspect-ratio:4/5"><img src="assets/img/ceo.jpg" alt="Yayra Akorli, chief aesthetician" loading="lazy"></div>
+      <div>
+        <h2 class="h2" style="margin-bottom:20px">Precision, patience and intentional care</h2>
+        <p class="lede">I'm Yayra Akorli, chief aesthetician at Seva Wellness. Every transformation here is nurtured, not rushed.</p>
+        <p style="color:var(--ink-soft)">Your skin is entrusted to skilled professionals who treat it with respect. Before any treatment we ask a series of questions to understand exactly what you want to solve — and if you need a doctor instead, we'll tell you.</p>
+        <p class="small" style="margin-top:20px">Techniques we use include hydrofacial, ultrasonic facial, photon skin therapy, ozone therapy, high frequency, ice head application, extraction and microneedling.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="menu-title">
+    <div class="section-head"><div><h2 class="h2" id="menu-title">Treatment menu</h2><p>Every treatment is customised after a skin assessment. Prices and times are on our booking site.</p></div></div>
+    <div class="treat-list" data-treatments></div>
+  </section>
+
+  <section class="section wrap" aria-label="Studio gallery">
+    <div class="gallery-strip">
+      <div class="media"><img src="assets/img/facial-client.jpg" alt="A client during an acne facial" loading="lazy"></div>
+      <div class="media"><img src="assets/img/team.jpg" alt="Seva Wellness aestheticians" loading="lazy"></div>
+      <div class="media"><img src="assets/img/treatment.jpg" alt="High frequency treatment in progress" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="book" aria-labelledby="book-title">
+    <div class="cta-band">
+      <div>
+        <h2 id="book-title">Book your treatment online</h2>
+        <p>See prices, pick your treatment and choose a time on our booking site. Prefer to talk first? Call or WhatsApp <a href="tel:+233558498657" style="color:inherit">+233 55 849 8657</a>.</p>
+      </div>
+      <div class="actions"><a class="btn btn-light" href="https://booking.nyonderma.com/" target="_blank" rel="noopener">Book on booking.nyonderma.com</a></div>
+    </div>
+    <p class="small" style="margin-top:18px">On the booking site you'll find treatments for acne, anti-ageing, pigmentation, dull skin, body care, body contouring, bumps and skin tags, glam services and combo packages.</p>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const { esc } = window.Nyon;
+  const T = window.NYON_SEED.treatments;
+  document.querySelector("[data-treatments]").innerHTML = T.map(t => `
+    <div class="treat"><div><h3>${esc(t.name)}</h3></div>
+      <p>${esc(t.desc)}</p><a class="btn" href="https://booking.nyonderma.com/" target="_blank" rel="noopener" aria-label="Book ${esc(t.name)}">Book</a></div>`).join("");
+
+})();
+</script>
+</body>
+</html>

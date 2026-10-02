@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout — Nyon Derma</title>
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card" style="padding-bottom:36px">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li><a href="shop.html">Shop</a></li><li>Checkout</li></ol>
+      <h1 class="display" style="font-size:clamp(2.2rem,5vw,3.6rem)">Checkout</h1>
+    </div>
+  </section>
+
+  <section class="section wrap" style="padding-top:48px" data-checkout></section>
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/account.js"></script>
+<script>
+(function () {
+  const { Store, money, img, esc, cartLines, cartTotal, priceOf, priceHTML } = window.Nyon;
+  // Delivery zones and fees are edited in admin → Settings.
+  const ZONES = Store.settings().zones;
+  const root = document.querySelector("[data-checkout]");
+  let zone = ZONES[0].key;
+  let discount = null; // { code, amount, label }
+
+  const discountAmount = () => {
+    if (!discount) return 0;
+    const fresh = Store.applyCode(discount.code, cartTotal());
+    if (fresh.error) { discount = null; return 0; }
+    discount = fresh;
+    return fresh.amount;
+  };
+
+  function summary() {
+    const z = ZONES.find(x => x.key === zone);
+    const sub = cartTotal();
+    const disc = discountAmount();
+    return `<h2 class="h3">Order summary</h2>
+      ${cartLines().map(l => `<div class="line-item" style="grid-template-columns:56px 1fr auto"><img src="${img(l.product.img)}" alt="" style="width:56px;height:56px"><div><strong>${esc(l.product.name)}</strong>
+        <span class="small">${priceHTML(l.product)} each</span>
+        <div class="qty"><button type="button" data-qty="${l.id}" data-d="-1" aria-label="Remove one">−</button><span>${l.qty}</span><button type="button" data-qty="${l.id}" data-d="1" aria-label="Add one">+</button></div></div><strong>${money(l.qty * priceOf(l.product))}</strong></div>`).join("")}
+      <form class="search" data-code-form style="margin-top:6px">
+        <label class="sr-only" for="c-code">Discount code</label>
+        <input id="c-code" placeholder="Discount code" autocomplete="off" value="${discount ? esc(discount.code) : ""}" style="text-transform:uppercase">
+        <button class="btn" type="submit" style="padding:8px 16px">${discount ? "Applied" : "Apply"}</button>
+      </form>
+      <p class="small" data-code-msg role="status" style="margin:0;${discount ? "color:var(--teal-deep)" : ""}">${discount ? `${esc(discount.code)}: ${esc(discount.label)}. <button type="button" data-remove-code style="border:0;background:none;padding:0;text-decoration:underline;cursor:pointer;color:inherit">Remove</button>` : ""}</p>
+      <div class="totals"><span>Subtotal</span><span>${money(sub)}</span></div>
+      ${disc ? `<div class="totals" style="color:var(--teal-deep)"><span>Discount (${esc(discount.code)})</span><span>−${money(disc)}</span></div>` : ""}
+      <div class="totals"><span>Delivery to ${z.label}</span><span>${z.fee ? money(z.fee) : "Quoted later"}</span></div>
+      <div class="totals grand"><span>Total</span><span>${money(sub - disc + z.fee)}</span></div>
+      <p class="small" style="margin:0">Arrives in ${z.eta}.</p>`;
+  }
+
+  function render() {
+    if (!cartLines().length) {
+      root.innerHTML = `<div class="empty"><strong>Your bag is empty</strong>Add a few products and come back here to check out.<br><br><a class="btn btn-primary" href="shop.html">Browse the catalogue</a></div>`;
+      return;
+    }
+    if (!root.querySelector("form")) {
+      root.innerHTML = `<div class="checkout">
+        <form class="form-card" data-order novalidate>
+          <h2 class="h3" style="margin-bottom:20px">Delivery details</h2>
+          <div class="form-grid">
+            <div class="field"><label for="c-name">Full name</label><input id="c-name" name="name" autocomplete="name" required><span class="err">Enter your full name.</span></div>
+            <div class="field"><label for="c-phone">Phone number</label><input id="c-phone" name="phone" type="tel" autocomplete="tel" required><span class="err">Enter a phone number for delivery updates.</span></div>
+            <div class="field full"><label for="c-email">Email <span class="small">(optional, for your receipt)</span></label><input id="c-email" name="email" type="email" autocomplete="email"></div>
+            <div class="field full"><label for="c-zone">Deliver to</label><select id="c-zone" name="zone">${ZONES.map(z => `<option value="${z.key}">${z.label}</option>`).join("")}</select></div>
+            <div class="field full"><label for="c-addr">Address or landmark</label><input id="c-addr" name="address" autocomplete="street-address" required placeholder="House number, street, area"><span class="err">Enter an address the rider can find.</span><span class="hint">Check this carefully — it can't be changed once the package is picked up.</span></div>
+            <div class="field full"><label for="c-city">Town or city</label><input id="c-city" name="city" autocomplete="address-level2" required><span class="err">Enter your town or city.</span></div>
+          </div>
+          <h2 class="h3" style="margin:32px 0 14px">Payment</h2>
+          <div class="pay-options">
+            <label class="pay-option"><input type="radio" name="pay" value="Mobile Money" checked> Mobile Money (MTN, Telecel, AirtelTigo)</label>
+            <label class="pay-option"><input type="radio" name="pay" value="Card"> Debit or credit card</label>
+            <label class="pay-option"><input type="radio" name="pay" value="Pay on delivery"> Pay on delivery (Accra only)</label>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit" style="margin-top:28px;padding:16px">Place order</button>
+        </form>
+        <aside class="summary-card" data-summary></aside>
+      </div>`;
+      const form = root.querySelector("[data-order]");
+      form.zone.addEventListener("change", e => { zone = e.target.value; root.querySelector("[data-summary]").innerHTML = summary(); });
+      form.addEventListener("submit", placeOrder);
+      const acct = window.NyonAccount.get();
+      if (acct) { form.name.value = acct.name; form.email.value = acct.email; form.phone.value = acct.phone || ""; }
+    }
+    root.querySelector("[data-summary]").innerHTML = summary();
+  }
+
+  // Discount code form lives inside the summary, which re-renders, so delegate.
+  root.addEventListener("submit", e => {
+    if (!e.target.matches("[data-code-form]")) return;
+    e.preventDefault();
+    const res = Store.applyCode(e.target.querySelector("input").value, cartTotal());
+    if (res.error) {
+      discount = null;
+      root.querySelector("[data-summary]").innerHTML = summary();
+      const msg = root.querySelector("[data-code-msg]");
+      msg.textContent = res.error; msg.style.color = "#b3243a";
+      return;
+    }
+    discount = res;
+    root.querySelector("[data-summary]").innerHTML = summary();
+  });
+  root.addEventListener("click", e => {
+    if (e.target.closest("[data-remove-code]")) { discount = null; root.querySelector("[data-summary]").innerHTML = summary(); }
+  });
+
+  function placeOrder(e) {
+    e.preventDefault();
+    const form = e.target;
+    const d = Object.fromEntries(new FormData(form));
+    let ok = true;
+    [["#c-name", d.name.trim().length > 1], ["#c-phone", d.phone.replace(/\D/g, "").length >= 9], ["#c-addr", d.address.trim().length > 3], ["#c-city", d.city.trim().length > 1]]
+      .forEach(([id, v]) => { form.querySelector(id).closest(".field").classList.toggle("has-error", !v); if (!v) ok = false; });
+    if (!ok) { form.querySelector(".has-error input").focus(); return; }
+    const z = ZONES.find(x => x.key === d.zone);
+    const items = cartLines().map(l => ({ id: l.id, name: l.product.name, price: priceOf(l.product), qty: l.qty }));
+    const disc = discountAmount();
+    const order = {
+      id: "ND-" + (10400 + Store.read(Store.KEYS.orders, []).length + 1),
+      customer: d.name, phone: d.phone, email: d.email, address: `${d.address}, ${d.city}`, zone: z.label,
+      pay: d.pay, items, subtotal: cartTotal(), discount: disc, code: discount ? discount.code : "", delivery: z.fee, total: cartTotal() - disc + z.fee,
+      status: "new", created: new Date().toISOString()
+    };
+    if (discount) {
+      const codes = Store.codes(); const c = codes.find(x => x.code === discount.code);
+      if (c) { c.uses = (c.uses || 0) + 1; Store.saveCodes(codes); }
+    }
+    Store.push(Store.KEYS.orders, order);
+    const products = Store.products();
+    items.forEach(i => { const p = products.find(x => x.id === i.id); if (p) p.stock = Math.max(0, (p.stock ?? 0) - i.qty); });
+    Store.saveProducts(products);
+    Store.saveCart([]);
+    const pts = window.NyonAccount.award("shop", order.id);
+    root.innerHTML = `<div class="empty" style="max-width:560px;margin:0 auto">
+      <strong style="font-size:1.8rem">Order ${order.id} placed</strong>
+      <p style="margin:12px auto">Thank you, ${esc(d.name.split(" ")[0])}. We'll text ${esc(d.phone)} when your order is on its way. Total ${money(order.total)}, paid by ${esc(d.pay.toLowerCase())}.${pts ? ` You earned ${pts} reward points.` : ` <a href="account.html#register">Create a profile</a> to earn points on your next order.`}</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-primary" href="shop.html">Continue shopping</a><a class="btn" href="track.html?order=${order.id}">Track this order</a></div></div>`;
+  }
+
+  window.addEventListener("storage", render);
+  document.addEventListener("click", e => { if (e.target.closest("[data-qty],[data-remove]")) setTimeout(render, 0); });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skin School — Nyon Derma</title>
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body" data-head>
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li><a href="blog.html">Skin School</a></li></ol>
+    </div>
+  </section>
+
+  <section class="section wrap" style="padding-top:48px" data-article></section>
+
+  <section class="section wrap" aria-labelledby="more-title">
+    <div class="section-head"><h2 class="h2" id="more-title">Keep reading</h2><a class="btn" href="blog.html">All articles</a></div>
+    <div class="post-grid" data-more></div>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/posts.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const { Store, img, esc, priceHTML } = window.Nyon;
+  const posts = Store.posts();
+  const slug = new URLSearchParams(location.search).get("a");
+  const post = posts.find(p => p.slug === slug);
+  const root = document.querySelector("[data-article]");
+  const fmt = d => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+  if (!post) {
+    root.innerHTML = `<div class="empty"><strong>We couldn't find that article</strong>It may have moved. Browse all Skin School articles instead.<br><br><a class="btn btn-primary" href="blog.html">Go to Skin School</a></div>`;
+    document.querySelector("[aria-labelledby=more-title]").remove();
+    return;
+  }
+
+  document.title = `${post.title} — Nyon Derma`;
+  document.querySelector("[data-head]").insertAdjacentHTML("beforeend", `
+    <h1 class="display" style="font-size:clamp(2rem,4.4vw,3.4rem)">${esc(post.title)}</h1>
+    <p class="lede" style="margin-top:16px">${fmt(post.date)}, ${post.mins} min read</p>`);
+
+  // The source posts often use short bold paragraphs as sub-headings.
+  const isHeading = (type, t, next) => type === "h" ||
+    (type === "p" && t.length < 80 && !/[.!,;]$/.test(t) && t.split(" ").length <= 12 && !(/:$/.test(t) && next && next[0] === "li"));
+  let html = "", list = [];
+  const flush = () => { if (list.length) { html += `<ul>${list.map(t => `<li>${esc(t)}</li>`).join("")}</ul>`; list = []; } };
+  post.blocks.forEach(([type, t], i) => {
+    if (type === "li") { list.push(t); return; }
+    flush();
+    if (!isHeading(type, t, post.blocks[i + 1])) { html += `<p>${esc(t)}</p>`; return; }
+    const label = esc(t.replace(/:$/, ""));
+    html += /^\d+[.)]\s/.test(t) ? `<h3>${label}</h3>` : `<h2>${label}</h2>`;
+  });
+  flush();
+
+  // Suggest a product that matches the article's topic.
+  const text = (post.title + " " + post.blocks.map(b => b[1]).join(" ")).toLowerCase();
+  const MATCH = [["urea", "intense-repair-lotion"], ["tinea", "intense-repair-lotion"], ["niacinamide", "ultra-posh-niacinamide-zinc-serum"],
+    ["salicylic", "acne-free-face-wash"], ["purging", "acne-free-face-cream"], ["forehead", "acne-free-face-wash"], ["acne", "acne-pores-set"], ["skin type", "smooth-and-clean-set"]];
+  const hit = MATCH.find(([k]) => text.includes(k));
+  const prod = hit && Store.bySlug(hit[1]);
+
+  root.innerHTML = `
+    ${post.img ? `<div class="article-hero"><img src="${img(post.img)}" alt=""></div>` : ""}
+    <article class="article">
+      <div class="prose">${html}</div>
+      ${prod ? `<aside class="article-aside"><img src="${img(prod.img)}" alt=""><div><span class="small">Mentioned in this article</span><strong>${esc(prod.name)}</strong>${priceHTML(prod)}</div>
+        <a class="btn btn-primary" href="product.html?p=${prod.slug}">View product</a></aside>` : ""}
+    </article>`;
+
+  document.querySelector("[data-more]").innerHTML = posts.filter(p => p !== post).slice(0, 3).map(p => `
+    <a class="post-card" href="article.html?a=${p.slug}">
+      <div class="media"><img src="${img(p.img)}" alt="" loading="lazy"></div>
+      <div class="post-meta"><span>${p.mins} min read</span></div><h3>${esc(p.title)}</h3></a>`).join("");
+})();
+</script>
+</body>
+</html>

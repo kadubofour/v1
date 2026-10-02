@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customer help — Nyon Derma</title>
+  <meta name="description" content="Answers about orders, shipping, tracking, returns and exchanges at Nyon Derma.">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>Customer help</li></ol>
+      <h1 class="display">Customer help</h1>
+      <p class="lede">Our happiness team is always here to assist. Search the answers below, or get in touch.</p>
+      <form class="search" role="search" style="margin-top:24px;max-width:460px;background:var(--white)" data-help-search>
+        <label class="sr-only" for="hq">Search help</label>
+        <input id="hq" type="search" placeholder="Search, for example “returns” or “tracking”">
+      </form>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="help-layout">
+      <nav class="help-side" aria-label="Help topics" data-help-nav></nav>
+      <div>
+        <div data-help></div>
+        <p class="empty" data-help-empty hidden><strong>No answers match that search</strong>Try a different word, or send us a message.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="reach-title">
+    <div class="section-head"><h2 class="h2" id="reach-title">Still need help?</h2></div>
+    <div class="contact-strip">
+      <a href="contact.html"><strong>Send a message</strong><span>We reply within one working day.</span></a>
+      <a href="https://wa.me/233558498657" target="_blank" rel="noopener"><strong>WhatsApp us</strong><span>Fastest for photos of damaged orders.</span></a>
+      <a href="tel:+233558498657"><strong>Call +233 55 849 8657</strong><span>Speak to the team directly.</span></a>
+    </div>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const { esc } = window.Nyon;
+  const H = window.NYON_SEED.help;
+  document.querySelector("[data-help-nav]").innerHTML = H.map(g => `<a href="#${g.key}">${esc(g.title)}</a>`).join("");
+  const root = document.querySelector("[data-help]");
+  root.innerHTML = H.map(g => `<section class="help-group" id="${g.key}" aria-labelledby="h-${g.key}">
+    <h2 id="h-${g.key}">${esc(g.title)}</h2><p>${esc(g.intro)}</p>
+    <div class="faq">${g.items.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div></section>`).join("");
+
+  const input = document.getElementById("hq");
+  document.querySelector("[data-help-search]").addEventListener("submit", e => e.preventDefault());
+  input.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    root.querySelectorAll(".help-group").forEach(g => {
+      let n = 0;
+      g.querySelectorAll("details").forEach(d => {
+        const hit = !q || d.textContent.toLowerCase().includes(q);
+        d.hidden = !hit; if (hit) n++;
+        d.open = !!q && hit;
+      });
+      g.hidden = n === 0; shown += n;
+    });
+    document.querySelector("[data-help-empty]").hidden = shown > 0;
+  });
+})();
+</script>
+</body>
+</html>

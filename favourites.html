@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Favourites — Nyon Derma</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>Favourites</li></ol>
+      <h1 class="display">Your favourites</h1>
+      <p class="lede">Products you've saved with the heart button. Add them to your bag whenever you're ready.</p>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-label="Saved products">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:20px" data-actions hidden><button class="btn" type="button" data-add-all>Add all to bag</button></div>
+    <div class="grid-products" data-grid></div>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const { Store, productCard, addToCart } = window.Nyon;
+  const grid = document.querySelector("[data-grid]");
+  function render() {
+    const ids = Store.read(Store.KEYS.favs, []);
+    const list = Store.visibleProducts().filter(p => ids.includes(p.id));
+    document.querySelector("[data-actions]").hidden = list.length < 2;
+    grid.innerHTML = list.length ? list.map(productCard).join("") :
+      `<div class="empty" style="grid-column:1/-1"><strong>No favourites yet</strong>Tap the heart on any product to save it here.<br><br><a class="btn btn-primary" href="shop.html">Browse the catalogue</a></div>`;
+  }
+  // Un-hearting a product removes it from this page straight away.
+  grid.addEventListener("click", e => { if (e.target.closest("[data-fav]")) setTimeout(render, 0); });
+  document.querySelector("[data-add-all]").addEventListener("click", () => {
+    const ids = Store.read(Store.KEYS.favs, []);
+    Store.visibleProducts().filter(p => ids.includes(p.id) && p.stock > 0).forEach(p => addToCart(p.id, 1));
+  });
+  render();
+})();
+</script>
+</body>
+</html>

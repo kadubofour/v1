@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skin School — Nyon Derma</title>
+  <meta name="description" content="Articles on acne, skin types, purging, niacinamide, salicylic acid and caring for melanin-rich skin, from the Nyon Derma team.">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>Skin School</li></ol>
+      <h1 class="display">Skin School</h1>
+      <p class="lede">Get educated on healthy skin care. Read about skin conditions and the ingredients we use in Nyon Derma products.</p>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-label="Latest article" data-feature></section>
+
+  <section class="section wrap" aria-labelledby="all-title">
+    <div class="section-head"><h2 class="h2" id="all-title">All articles</h2></div>
+    <div class="topic-row" role="group" aria-label="Filter by topic" data-topics></div>
+    <div class="post-grid" data-posts></div>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/posts.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const { Store, img, esc } = window.Nyon;
+  const posts = Store.posts();
+  if (!posts.length) { document.querySelector("[data-feature]").innerHTML = `<div class="empty"><strong>No articles yet</strong>New Skin School articles will appear here.</div>`; return; }
+  const fmt = d => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const excerpt = p => { const t = p.excerpt.replace(/…$/, ""); return t.length > 160 ? t.slice(0, t.lastIndexOf(" ", 160)) + "…" : t; };
+  const TOPICS = [
+    ["all", "All", () => true],
+    ["acne", "Acne", p => /acne|purg|salicylic|pimple/i.test(p.title)],
+    ["ingredients", "Ingredients", p => /niacinamide|salicylic|urea/i.test(p.title)],
+    ["basics", "Skin basics", p => /skin type|never do|emotional/i.test(p.title)]
+  ];
+  let topic = "all";
+
+  const f = posts[0];
+  document.querySelector("[data-feature]").innerHTML = `
+    <a class="post-feature" href="article.html?a=${f.slug}">
+      <div class="media"><img src="${img(f.img)}" alt=""></div>
+      <div><div class="post-meta"><span class="badge">Latest</span><span>${fmt(f.date)}</span><span>${f.mins} min read</span></div>
+        <h2>${esc(f.title)}</h2><p>${esc(excerpt(f))}</p><span class="btn" style="margin-top:8px">Read the article</span></div>
+    </a>`;
+
+  function render() {
+    const test = TOPICS.find(t => t[0] === topic)[2];
+    document.querySelector("[data-topics]").innerHTML = TOPICS.map(([k, l]) => `<button class="chip" type="button" data-topic="${k}" aria-pressed="${k === topic}">${l}</button>`).join("");
+    document.querySelector("[data-posts]").innerHTML = posts.filter(test).map(p => `
+      <a class="post-card" href="article.html?a=${p.slug}">
+        <div class="media"><img src="${img(p.img)}" alt="" loading="lazy"></div>
+        <div class="post-meta"><span>${fmt(p.date)}</span><span>${p.mins} min read</span></div>
+        <h3>${esc(p.title)}</h3><p>${esc(excerpt(p))}</p>
+      </a>`).join("");
+  }
+  document.querySelector("[data-topics]").addEventListener("click", e => { const b = e.target.closest("[data-topic]"); if (b) { topic = b.dataset.topic; render(); } });
+  render();
+})();
+</script>
+</body>
+</html>

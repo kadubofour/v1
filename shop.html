@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop — Nyon Derma</title>
+  <meta name="description" content="Browse the full Nyon Derma catalogue: face washes, serums, face creams, toning tonics, body care and complete skincare sets.">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card has-media">
+    <div class="page-card-media"><img src="assets/img/IMG_1470.jpeg" alt=""></div>
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>Shop</li></ol>
+      <h1 class="display">The catalogue</h1>
+      <p class="lede">Every Nyon Derma product in one place. Filter by what your skin needs, or start with a complete set.</p>
+    </div>
+  </section>
+
+  <section class="section wrap" id="search" aria-label="Products">
+    <div class="shop-layout">
+      <aside class="filters" data-filters aria-label="Filters">
+        <div><h3>Skin concern</h3><ul class="filter-list" data-concern-filter></ul></div>
+        <div><h3>Category</h3><ul class="filter-list" data-cat-filter></ul></div>
+        <div><h3>Offers</h3><ul class="filter-list" data-sale-filter></ul></div>
+        <div><h3>Price</h3><ul class="filter-list" data-price-filter></ul></div>
+      </aside>
+      <div>
+        <div class="toolbar">
+          <form class="search" role="search" data-search>
+            <label class="sr-only" for="q">Search products</label>
+            <input id="q" name="q" type="search" placeholder="Search by product or ingredient">
+            <span class="icon-btn sm is-dark" aria-hidden="true">⌕</span>
+          </form>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn filters-toggle" type="button" data-toggle-filters aria-expanded="false">Filters</button>
+            <label class="sr-only" for="sort">Sort by</label>
+            <select class="select" id="sort" data-sort>
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="name">Name A–Z</option>
+            </select>
+          </div>
+        </div>
+        <div class="active-filters" data-active></div>
+        <p class="small" data-count aria-live="polite" style="margin-bottom:20px"></p>
+        <div class="grid-products" data-grid></div>
+      </div>
+    </div>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const { Store, esc, productCard, priceOf, onSale } = window.Nyon;
+  const S = window.NYON_SEED;
+  const all = Store.visibleProducts();
+  const params = new URLSearchParams(location.search);
+  const state = { q: params.get("q") || "", concern: params.get("concern") || "", cat: params.get("cat") || "", price: "", sale: params.get("sale") === "1" ? "1" : "", sort: "featured" };
+
+  const PRICES = [
+    { key: "u100", label: "Under ₵100", test: p => priceOf(p) < 100 },
+    { key: "100-300", label: "₵100 – ₵300", test: p => priceOf(p) >= 100 && priceOf(p) <= 300 },
+    { key: "o300", label: "Over ₵300", test: p => priceOf(p) > 300 }
+  ];
+  const cats = [...new Set(all.flatMap(p => p.cats))].sort();
+
+  const q = document.getElementById("q"); q.value = state.q;
+
+  function filtered(except) {
+    return all.filter(p =>
+      (except === "concern" || !state.concern || p.concerns.includes(state.concern)) &&
+      (except === "cat" || !state.cat || p.cats.includes(state.cat)) &&
+      (except === "price" || !state.price || PRICES.find(x => x.key === state.price).test(p)) &&
+      (except === "sale" || !state.sale || onSale(p)) &&
+      (!state.q || (p.name + " " + p.desc + " " + p.cats.join(" ")).toLowerCase().includes(state.q.toLowerCase())));
+  }
+
+  function filterButtons(items, key, current) {
+    return `<li><button type="button" data-f="${key}" data-v="" aria-pressed="${!current}"><span>All</span></button></li>` +
+      items.map(i => `<li><button type="button" data-f="${key}" data-v="${esc(i.v)}" aria-pressed="${current === i.v}"><span>${esc(i.label)}</span><span class="n">${i.n}</span></button></li>`).join("");
+  }
+
+  function render() {
+    const pool = (ex) => filtered(ex);
+    document.querySelector("[data-concern-filter]").innerHTML = filterButtons(S.concerns.map(c => ({ v: c.key, label: c.label, n: pool("concern").filter(p => p.concerns.includes(c.key)).length })), "concern", state.concern);
+    document.querySelector("[data-cat-filter]").innerHTML = filterButtons(cats.map(c => ({ v: c, label: c, n: pool("cat").filter(p => p.cats.includes(c)).length })), "cat", state.cat);
+    document.querySelector("[data-price-filter]").innerHTML = filterButtons(PRICES.map(x => ({ v: x.key, label: x.label, n: pool("price").filter(x.test).length })), "price", state.price);
+    const saleCount = pool("sale").filter(onSale).length;
+    document.querySelector("[data-sale-filter]").closest("div").hidden = !saleCount && !state.sale;
+    document.querySelector("[data-sale-filter]").innerHTML = filterButtons([{ v: "1", label: "On sale", n: saleCount }], "sale", state.sale);
+
+    let list = filtered();
+    if (state.sort === "price-asc") list.sort((a, b) => priceOf(a) - priceOf(b));
+    if (state.sort === "price-desc") list.sort((a, b) => priceOf(b) - priceOf(a));
+    if (state.sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
+
+    const chips = [];
+    if (state.concern) chips.push(["concern", S.concerns.find(c => c.key === state.concern)?.label]);
+    if (state.cat) chips.push(["cat", state.cat]);
+    if (state.price) chips.push(["price", PRICES.find(x => x.key === state.price).label]);
+    if (state.sale) chips.push(["sale", "On sale"]);
+    if (state.q) chips.push(["q", `“${state.q}”`]);
+    document.querySelector("[data-active]").innerHTML = chips.map(([k, l]) => `<button class="chip is-active" type="button" data-clear="${k}" aria-label="Remove filter ${esc(l)}">${esc(l)} ✕</button>`).join("") +
+      (chips.length > 1 ? `<button class="chip" type="button" data-clear="all">Clear all</button>` : "");
+
+    document.querySelector("[data-count]").textContent = `${list.length} ${list.length === 1 ? "product" : "products"}`;
+    document.querySelector("[data-grid]").innerHTML = list.length ? list.map(productCard).join("") :
+      `<div class="empty" style="grid-column:1/-1"><strong>No products match these filters</strong>Remove a filter or search for a different word.<br><br><button class="btn" type="button" data-clear="all">Clear all filters</button></div>`;
+
+    const u = new URLSearchParams();
+    ["q", "concern", "cat", "sale"].forEach(k => state[k] && u.set(k, state[k]));
+    history.replaceState(null, "", location.pathname + (u.toString() ? "?" + u : "") + location.hash);
+  }
+
+  document.addEventListener("click", e => {
+    const f = e.target.closest("[data-f]");
+    if (f) { state[f.dataset.f] = f.dataset.v; render(); return; }
+    const c = e.target.closest("[data-clear]");
+    if (c) {
+      if (c.dataset.clear === "all") Object.assign(state, { q: "", concern: "", cat: "", price: "", sale: "" });
+      else state[c.dataset.clear] = "";
+      q.value = state.q; render();
+    }
+    const t = e.target.closest("[data-toggle-filters]");
+    if (t) { const open = document.querySelector("[data-filters]").classList.toggle("is-open"); t.setAttribute("aria-expanded", open); }
+  });
+  q.addEventListener("input", () => { state.q = q.value.trim(); render(); });
+  document.querySelector("[data-search]").addEventListener("submit", e => e.preventDefault());
+  document.querySelector("[data-sort]").addEventListener("change", e => { state.sort = e.target.value; render(); });
+  render();
+  if (location.hash === "#search") q.focus();
+})();
+</script>
+</body>
+</html>

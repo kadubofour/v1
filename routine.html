@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skincare routines — Nyon Derma</title>
+  <meta name="description" content="Step-by-step routines for every Nyon Derma skincare set, morning and night.">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>Skincare routine</li></ol>
+      <h1 class="display">A step-by-step process to flawless skin</h1>
+      <p class="lede">Thank you for choosing us. Find your set below and follow the steps in order. Directions for single products are on each label.</p>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="rules-title">
+    <h2 class="sr-only" id="rules-title">Three rules for every set</h2>
+    <div class="rules">
+      <div class="rule"><strong>Start on clean skin</strong><span>Always wash and pat dry before applying anything.</span></div>
+      <div class="rule"><strong>Serum before cream</strong><span>Let the serum set for 10–20 seconds before your cream goes on.</span></div>
+      <div class="rule"><strong>Cream or lotion before oil</strong><span>Oil goes last to seal everything in.</span></div>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-label="Routines by set">
+    <nav class="routine-nav" aria-label="Jump to a set" data-jump></nav>
+    <div data-routines></div>
+  </section>
+
+  <section class="section wrap">
+    <div class="cta-band">
+      <div><h2>Not sure which set is yours?</h2><p>Send us a message about your skin and we'll point you to the right one.</p></div>
+      <div class="actions"><a class="btn btn-light" href="contact.html">Send a message</a><a class="btn" href="shop.html?cat=Sets">Shop all sets</a></div>
+    </div>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const { Store, img, esc, priceHTML } = window.Nyon;
+  const R = window.NYON_SEED.routines;
+  const WHEN = { day: "Morning", night: "Night" };
+  const step = s => Array.isArray(s) ? `<li><span>${esc(s[1])}<span class="badge when">${WHEN[s[0]]}</span></span></li>` : `<li><span>${esc(s)}</span></li>`;
+
+  document.querySelector("[data-jump]").innerHTML = R.map(r => `<a class="chip" href="#${r.slug}">${esc(r.name)}</a>`).join("");
+  document.querySelector("[data-routines]").innerHTML = R.map(r => {
+    const p = Store.bySlug(r.slug);
+    const body = r.groups
+      ? r.groups.map(([label, steps]) => `<p class="steps-label">${esc(label)}</p><ol class="steps">${steps.map(step).join("")}</ol>`).join("")
+      : `<ol class="steps">${r.steps.map(step).join("")}</ol>`;
+    return `<article class="routine" id="${r.slug}">
+      <div class="set-card">
+        ${p ? `<a class="media" href="product.html?p=${p.slug}"><img src="${img(p.img)}" alt="${esc(p.name)}" loading="lazy"></a>` : ""}
+        <div>${p ? `<div style="font-weight:600">${priceHTML(p)}</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn btn-primary" type="button" data-add="${p.id}" style="padding:10px 18px">Add to bag</button><a class="btn" href="product.html?p=${p.slug}" style="padding:10px 18px">Details</a></div>` : ""}</div>
+      </div>
+      <div><h2>${esc(r.name)}</h2>${body}</div>
+    </article>`;
+  }).join("");
+})();
+</script>
+</body>
+</html>

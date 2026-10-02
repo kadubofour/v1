@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My account — Nyon Derma</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>My account</li></ol>
+      <h1 class="display" data-title>My account</h1>
+      <p class="lede" data-sub>Sign in to see your orders, reward points and referral link.</p>
+    </div>
+  </section>
+
+  <section class="section wrap" data-root></section>
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/account.js"></script>
+<script>
+(function () {
+  const { money, esc, toast } = window.Nyon;
+  const A = window.NyonAccount;
+  const root = document.querySelector("[data-root]");
+  let tab = "orders";
+
+  const field = (id, label, type = "text", extra = "") => `<div class="field full"><label for="${id}">${label}</label><input id="${id}" name="${id}" type="${type}" ${extra}><span class="err"></span></div>`;
+
+  function authView() {
+    document.querySelector("[data-title]").textContent = "My account";
+    document.querySelector("[data-sub]").textContent = "Sign in to see your orders, reward points and referral link.";
+    root.innerHTML = `<div class="auth">
+      <form class="form-card" data-signin novalidate>
+        <h2 class="h3" style="margin-bottom:6px">Sign in</h2><p class="small" style="margin-bottom:18px">Welcome back.</p>
+        <div class="form-grid">${field("si-email", "Email address", "email", 'autocomplete="email" required')}${field("si-pass", "Password", "password", 'autocomplete="current-password" required')}
+          <div class="full"><button class="btn btn-primary btn-block" type="submit">Sign in</button></div>
+          <div class="full"><button type="button" data-forgot style="border:0;background:none;padding:0;color:var(--teal-deep);font-weight:600;text-decoration:underline;cursor:pointer">Forgot your password?</button></div></div>
+        <div class="form-grid" data-reset hidden style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line)">
+          <p class="full small" style="margin:0">Enter your email and we'll send you a link to set a new password.</p>
+          ${field("fp-email", "Email address", "email", 'autocomplete="email"')}
+          <div class="full"><button class="btn btn-block" type="button" data-send-reset>Send reset link</button></div>
+          <p class="full notice" data-reset-done hidden role="status"></p>
+        </div>
+      </form>
+      <form class="form-card" id="register" data-register novalidate>
+        <h2 class="h3" style="margin-bottom:6px">Create a profile</h2><p class="small" style="margin-bottom:18px">Get 10 reward points when you join.</p>
+        <div class="form-grid">${field("r-name", "Full name", "text", 'autocomplete="name" required')}${field("r-email", "Email address", "email", 'autocomplete="email" required')}
+          ${field("r-phone", "Phone number (optional)", "tel", 'autocomplete="tel"')}${field("r-pass", "Password", "password", 'autocomplete="new-password" required minlength="8"')}
+          <p class="full small" style="margin:0">This preview keeps your profile in this browser only and never stores your password.</p>
+          <div class="full"><button class="btn btn-primary btn-block" type="submit">Create profile</button></div></div>
+      </form></div>`;
+    if (location.hash === "#register") document.getElementById("r-name").focus();
+  }
+
+  function err(form, id, msg) { const f = form.querySelector("#" + id).closest(".field"); f.classList.toggle("has-error", !!msg); f.querySelector(".err").textContent = msg || ""; return !msg; }
+
+  function dashView() {
+    const a = A.get();
+    const orders = A.orders();
+    document.querySelector("[data-title]").textContent = `Hello, ${a.name.split(" ")[0]}`;
+    document.querySelector("[data-sub]").textContent = `Member since ${new Date(a.joined).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}.`;
+    const TABS = { orders: "Orders", rewards: "Reward points", affiliate: "Affiliate area", details: "Account details" };
+    const panels = {
+      orders: orders.length
+        ? `<h2>Your orders</h2>${orders.map(o => `<div class="order-row"><div><strong>${o.id}</strong><span class="small">${new Date(o.created).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}, ${o.items.reduce((s, i) => s + i.qty, 0)} items</span></div><span class="badge">${o.status.charAt(0).toUpperCase() + o.status.slice(1)}</span><strong>${money(o.total)}</strong></div>`).join("")}`
+        : `<h2>Your orders</h2><div class="empty"><strong>No orders yet</strong>Orders placed with ${esc(a.email)} appear here.<br><br><a class="btn btn-primary" href="shop.html">Browse the catalogue</a></div>`,
+      rewards: `<h2>Reward points</h2><div class="stat-row"><div><strong>${a.points}</strong><span>Points balance</span></div><div><strong>${a.history.length}</strong><span>Times earned</span></div><div><strong>${orders.length}</strong><span>Orders placed</span></div></div>
+        <a class="btn" href="rewards.html">Ways to earn more</a>`,
+      affiliate: `<h2>Affiliate area</h2><p style="color:var(--ink-soft)">Share your link. When friends shop with it, you earn reward points.</p>
+        <div class="ref-link"><code>${esc(A.referralLink())}</code><button class="btn btn-primary" type="button" data-copy style="padding:10px 18px">Copy link</button></div>
+        <div class="stat-row"><div><strong>${a.ref}</strong><span>Your referral code</span></div><div><strong>0</strong><span>Friends referred</span></div><div><strong>${A.has("refer") ? 10 : 0}</strong><span>Points from referrals</span></div></div>`,
+      details: `<h2>Account details</h2><form class="form-card" data-details novalidate><div class="form-grid">
+        <div class="field full"><label for="d-name">Full name</label><input id="d-name" value="${esc(a.name)}" required autocomplete="name"><span class="err"></span></div>
+        <div class="field"><label for="d-email">Email</label><input id="d-email" value="${esc(a.email)}" disabled></div>
+        <div class="field"><label for="d-phone">Phone</label><input id="d-phone" value="${esc(a.phone)}" autocomplete="tel"></div>
+        <label class="full" style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="d-news" ${a.newsletter ? "checked" : ""} style="accent-color:var(--teal)"> Send me skincare tips and offers by email</label>
+        <div class="full" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-primary" type="submit">Save changes</button><button class="btn" type="button" data-signout>Sign out</button></div></div></form>`
+    };
+    root.innerHTML = `<div class="account-layout">
+      <div class="account-tabs" role="tablist" aria-label="Account sections">${Object.entries(TABS).map(([k, l]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${k === tab}">${l}</button>`).join("")}</div>
+      <div class="account-panel" role="tabpanel">${panels[tab]}</div></div>`;
+  }
+
+  const render = () => (A.signedIn() ? dashView() : authView());
+
+  root.addEventListener("submit", e => {
+    e.preventDefault();
+    const f = e.target;
+    if (f.matches("[data-register]")) {
+      const name = f["r-name"].value.trim(), email = f["r-email"].value.trim(), pass = f["r-pass"].value;
+      const ok = [err(f, "r-name", name.length > 1 ? "" : "Enter your full name."), err(f, "r-email", /^\S+@\S+\.\S+$/.test(email) ? "" : "Enter a valid email address."), err(f, "r-pass", pass.length >= 8 ? "" : "Use at least 8 characters.")].every(Boolean);
+      if (!ok) return f.querySelector(".has-error input").focus();
+      A.register({ name, email, phone: f["r-phone"].value.trim() });
+      toast("Profile created. 10 points added."); tab = "orders"; render();
+    }
+    if (f.matches("[data-signin]")) {
+      const email = f["si-email"].value.trim();
+      if (!err(f, "si-email", /^\S+@\S+\.\S+$/.test(email) ? "" : "Enter a valid email address.")) return;
+      if (!err(f, "si-pass", f["si-pass"].value ? "" : "Enter your password.")) return;
+      if (A.signIn(email)) { render(); } else { err(f, "si-email", "No profile with that email on this device. Create a profile instead."); }
+    }
+    if (f.matches("[data-details]")) {
+      const name = f["d-name"].value.trim();
+      if (!err(f, "d-name", name.length > 1 ? "" : "Enter your full name.")) return;
+      const wasSub = A.get().newsletter, sub = f["d-news"].checked;
+      A.update({ name, phone: f["d-phone"].value.trim(), newsletter: sub });
+      if (sub && !wasSub && A.award("newsletter")) toast("Saved. 10 points added for joining the newsletter.");
+      else toast("Changes saved");
+      render();
+    }
+  });
+  root.addEventListener("click", async e => {
+    const t = e.target.closest("[data-tab]"); if (t) { tab = t.dataset.tab; render(); return; }
+    if (e.target.closest("[data-forgot]")) { const r = root.querySelector("[data-reset]"); r.hidden = !r.hidden; if (!r.hidden) root.querySelector("#fp-email").focus(); return; }
+    if (e.target.closest("[data-send-reset]")) {
+      const f = root.querySelector("[data-signin]"), email = f["fp-email"].value.trim();
+      if (!err(f, "fp-email", /^\S+@\S+\.\S+$/.test(email) ? "" : "Enter a valid email address.")) return;
+      // Same message whether or not the account exists, so emails can't be probed.
+      const done = root.querySelector("[data-reset-done]"); done.hidden = false;
+      done.textContent = `If there's an account for ${email}, a reset link is on its way. Check your inbox and spam folder.`;
+      return;
+    }
+    if (e.target.closest("[data-signout]")) { A.signOut(); toast("Signed out"); render(); return; }
+    if (e.target.closest("[data-copy]")) {
+      try { await navigator.clipboard.writeText(A.referralLink()); } catch (er) { prompt("Copy your referral link:", A.referralLink()); }
+      toast(A.award("refer") ? "Link copied. 10 points added." : "Link copied"); render();
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

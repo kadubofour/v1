@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your conversation — Nyon Derma</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>Your conversation</li></ol>
+      <h1 class="display" data-title>Your conversation</h1>
+      <p class="lede" data-sub>Your messages with the Nyon Derma team.</p>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="thread" data-thread aria-live="polite"><p class="small">Loading your conversation…</p></div>
+    <form class="form-card thread-reply" data-reply novalidate hidden>
+      <div class="field"><label for="r-body">Reply to Nyon Derma</label><textarea id="r-body" name="body" required></textarea><span class="err">Write a reply before sending.</span></div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px">
+        <button class="btn btn-primary" type="submit">Send reply</button>
+        <span class="small">Keep this page's link private. Anyone with it can read this conversation.</span>
+      </div>
+      <p class="notice" data-sent hidden role="status" style="margin-top:14px"></p>
+    </form>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const { esc } = window.Nyon;
+  const token = new URLSearchParams(location.search).get("t") || "";
+  const root = document.querySelector("[data-thread]");
+  const form = document.querySelector("[data-reply]");
+  const when = iso => new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const paras = t => esc(t).split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
+  const bubble = (who, mine, body, at) => `<article class="bubble${mine ? " mine" : ""}"><header><strong>${who}</strong><time>${when(at)}</time></header>${paras(body)}</article>`;
+
+  async function load() {
+    if (!token) return fail("This page needs the link from your email.");
+    try {
+      const res = await fetch(`/api/thread?t=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (!res.ok) return fail(data.error || "We couldn't load this conversation.");
+      const m = data.message;
+      document.querySelector("[data-title]").textContent = m.topic || "Your conversation";
+      document.querySelector("[data-sub]").textContent = `Hi ${m.name || "there"}. Here's your conversation with the Nyon Derma team.`;
+      root.innerHTML = bubble("You", true, m.body, m.created_at) +
+        data.replies.map(r => bubble(r.author === "staff" ? "Nyon Derma" : "You", r.author !== "staff", r.body, r.created_at)).join("") +
+        (data.replies.some(r => r.author === "staff") ? "" : `<p class="small">We'll reply within one working day.</p>`);
+      form.hidden = false;
+    } catch (e) {
+      fail("We couldn't load this conversation right now. Please try again shortly.");
+    }
+  }
+  function fail(msg) {
+    root.innerHTML = `<div class="empty"><strong>Conversation not available</strong>${esc(msg)}<br><br><a class="btn btn-primary" href="contact.html">Send us a new message</a></div>`;
+  }
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const body = form.body.value.trim();
+    const field = form.body.closest(".field");
+    field.classList.toggle("has-error", body.length < 2);
+    if (body.length < 2) return form.body.focus();
+    const btn = form.querySelector("[type=submit]"); btn.disabled = true;
+    try {
+      const res = await fetch(`/api/thread/reply?t=${encodeURIComponent(token)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || (data.errors && data.errors.body) || "Your reply didn't send.");
+      form.reset();
+      const sent = form.querySelector("[data-sent]"); sent.hidden = false; sent.style.color = "";
+      sent.textContent = "Reply sent. We'll get back to you within one working day.";
+      await load();
+    } catch (err) {
+      const sent = form.querySelector("[data-sent]"); sent.hidden = false; sent.style.color = "#b3243a";
+      sent.textContent = err.message === "Failed to fetch" ? "Your reply didn't send. Check your connection and try again." : err.message;
+    } finally { btn.disabled = false; }
+  });
+  load();
+})();
+</script>
+</body>
+</html>

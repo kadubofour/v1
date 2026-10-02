@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page not found — Nyon Derma</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <h1 class="display">We couldn't find that page</h1>
+      <p class="lede">It may have moved or no longer exists. Try searching the shop, or start from one of these.</p>
+      <form class="search" action="shop.html" role="search" style="margin-top:24px;max-width:460px;background:var(--white)">
+        <label class="sr-only" for="nf-q">Search products</label>
+        <input id="nf-q" name="q" type="search" placeholder="Search for a product">
+        <button class="icon-btn sm is-dark" type="submit" aria-label="Search">⌕</button>
+      </form>
+    </div>
+  </section>
+  <section class="section wrap">
+    <div class="section-head"><h2 class="h2">Popular right now</h2><a class="btn" href="shop.html">Browse the catalogue</a></div>
+    <div class="grid-products" data-grid></div>
+  </section>
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+  document.querySelector("[data-grid]").innerHTML = window.Nyon.Store.visibleProducts().filter(p => p.popular).slice(0, 4).map(window.Nyon.productCard).join("");
+</script>
+</body>
+</html>

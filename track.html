@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Track your order — Nyon Derma</title>
+  <meta name="description" content="Check the status of your Nyon Derma order with your order number and phone number.">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>Track your order</li></ol>
+      <h1 class="display">Track your order</h1>
+      <p class="lede">Enter the order number from your confirmation and the phone number you ordered with.</p>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="split">
+      <form class="form-card" data-track novalidate>
+        <div class="form-grid">
+          <div class="field full"><label for="t-order">Order number</label><input id="t-order" name="order" placeholder="ND-10401" autocomplete="off" required style="text-transform:uppercase"><span class="err">Enter your order number, for example ND-10401.</span></div>
+          <div class="field full"><label for="t-phone">Phone number</label><input id="t-phone" name="phone" type="tel" autocomplete="tel" required><span class="err">Enter the phone number on the order.</span></div>
+          <div class="full"><button class="btn btn-primary btn-block" type="submit">Track order</button></div>
+        </div>
+      </form>
+      <div data-result aria-live="polite">
+        <h2 class="h3" style="margin-bottom:10px">How delivery works</h2>
+        <p style="color:var(--ink-soft)">Orders within Ghana arrive in 24–48 hours. Outside Ghana, delivery takes 1–14 days. For orders outside Accra we text you at every stage of shipping.</p>
+        <p class="small">Can't find your order number? <a href="contact.html">Contact us</a> or check <a href="account.html">My account</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  const { Store, money, esc } = window.Nyon;
+  const form = document.querySelector("[data-track]");
+  const out = document.querySelector("[data-result]");
+  const STEPS = [["new", "Order received"], ["processing", "Being packed"], ["shipped", "On its way"], ["delivered", "Delivered"]];
+  const digits = v => String(v || "").replace(/\D/g, "").slice(-9);
+
+  const pre = new URLSearchParams(location.search).get("order");
+  if (pre) form.order.value = pre;
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const id = form.order.value.trim().toUpperCase(), phone = digits(form.phone.value);
+    const okId = /^ND-\d{3,}$/.test(id), okPhone = phone.length === 9;
+    form.order.closest(".field").classList.toggle("has-error", !okId);
+    form.phone.closest(".field").classList.toggle("has-error", !okPhone);
+    if (!okId || !okPhone) return;
+    const o = Store.read(Store.KEYS.orders, []).find(x => x.id === id && digits(x.phone) === phone);
+    if (!o) {
+      out.innerHTML = `<div class="empty" style="text-align:left;padding:0"><strong>We couldn't find that order</strong>Check the order number and use the phone number you ordered with. Still stuck? <a href="contact.html">Contact us</a>.</div>`;
+      return;
+    }
+    if (o.status === "cancelled") {
+      out.innerHTML = `<h2 class="h3">Order ${o.id}</h2><p style="color:var(--ink-soft)">This order was cancelled. If you weren't expecting this, <a href="contact.html">contact us</a>.</p>`;
+      return;
+    }
+    const at = STEPS.findIndex(s => s[0] === o.status);
+    out.innerHTML = `<h2 class="h3">Order ${o.id}</h2>
+      <p style="color:var(--ink-soft);margin:6px 0 0">Placed ${new Date(o.created).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}. ${o.items.reduce((s, i) => s + i.qty, 0)} items, ${money(o.total)}. Delivering to ${esc(o.address)}.</p>
+      <ol class="track-steps">${STEPS.map(([k, l], i) => `<li class="${i <= at ? "done" : ""}"><strong>${l}</strong>${i === at ? "Current status" : ""}</li>`).join("")}</ol>`;
+  });
+})();
+</script>
+</body>
+</html>

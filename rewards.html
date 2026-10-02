@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reward points — Nyon Derma</title>
+  <meta name="description" content="Earn Nyon Derma reward points when you shop, join the newsletter, create a profile or refer a friend.">
+  <link rel="icon" href="assets/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/mobile.css">
+</head>
+<body>
+<div class="sheet">
+  <section class="top-card page-card">
+    <div data-header-slot></div>
+    <div class="page-card-body">
+      <ol class="crumbs"><li><a href="index.html">Home</a></li><li>Reward points</li></ol>
+      <h1 class="display">Every cedi you spend deserves appreciation</h1>
+      <p class="lede">Collect points when you shop and when you help us grow.</p>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-label="Your balance"><div data-balance></div></section>
+
+  <section class="section wrap" aria-labelledby="earn-title">
+    <div class="section-head"><h2 class="h2" id="earn-title">How to earn</h2></div>
+    <div class="earn-grid" data-earn></div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="hist-title" data-history-wrap hidden>
+    <div class="section-head"><h2 class="h2" id="hist-title">Points history</h2></div>
+    <div data-history></div>
+  </section>
+
+  <div data-footer-slot></div>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/account.js"></script>
+<script>
+(function () {
+  const { esc, toast } = window.Nyon;
+  const A = window.NyonAccount;
+
+  function render() {
+    const a = A.get();
+    document.querySelector("[data-balance]").innerHTML = a
+      ? `<div class="points-card"><div><span>Points balance</span><div class="big">${a.points}</div><p>Signed in as ${esc(a.name)}.</p></div><a class="btn btn-light" href="account.html">My account</a></div>`
+      : `<div class="points-card"><div><span>Points balance</span><div class="big">—</div><p>Create a free profile to start collecting. You'll get 10 points straight away.</p></div><a class="btn btn-light" href="account.html#register">Create a profile</a></div>`;
+
+    const action = {
+      shop: `<a class="btn btn-primary" href="shop.html">Shop now</a>`,
+      newsletter: A.has("newsletter") ? `<span class="done">Subscribed, points added</span>` : `<button class="btn btn-primary" type="button" data-earn="newsletter">Sign up now</button>`,
+      profile: A.has("profile") ? `<span class="done">Profile created, points added</span>` : `<a class="btn btn-primary" href="account.html#register">Create a profile</a>`,
+      refer: A.has("refer") ? `<span class="done">Link copied, points added</span>` : `<button class="btn btn-primary" type="button" data-earn="refer">Get referral link</button>`
+    };
+    document.querySelector("[data-earn]").innerHTML = Object.entries(A.RULES).map(([k, r]) => `
+      <div class="earn"><span class="pts">+${r.pts}</span><h3>${esc(r.label)}</h3><p>${esc(r.desc)}</p>${action[k]}</div>`).join("");
+
+    const wrap = document.querySelector("[data-history-wrap]");
+    wrap.hidden = !(a && a.history.length);
+    if (a) document.querySelector("[data-history]").innerHTML = a.history.map(h => `
+      <div class="order-row"><div><strong>${esc(A.RULES[h.rule].label)}</strong><span class="small">${new Date(h.at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}${h.ref ? `, ${esc(h.ref)}` : ""}</span></div><span></span><strong>+${h.pts}</strong></div>`).join("");
+  }
+
+  document.addEventListener("click", async e => {
+    const b = e.target.closest("[data-earn]"); if (!b) return;
+    if (!A.signedIn()) { location.href = "account.html#register"; return; }
+    if (b.dataset.earn === "newsletter") { A.update({ newsletter: true }); A.award("newsletter"); toast("Subscribed. 10 points added."); }
+    if (b.dataset.earn === "refer") {
+      const link = A.referralLink();
+      try { await navigator.clipboard.writeText(link); toast("Referral link copied. 10 points added."); }
+      catch (err) { prompt("Copy your referral link:", link); }
+      A.award("refer");
+    }
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
